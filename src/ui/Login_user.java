@@ -15,21 +15,28 @@ public class Login_user extends JFrame {
         setSize(400, 200);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(new GridLayout(3, 2, 10, 10));
-
-        add(new JLabel("Email:"));
+        
+        JPanel mainPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        mainPanel.setBorder(
+            BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Thông tin đăng ký"),
+                BorderFactory.createEmptyBorder(10,10,10,10)
+            )
+        );
+        mainPanel.add(new JLabel("Email:"));
         txtEmail = new JTextField();
-        add(txtEmail);
+        mainPanel.add(txtEmail);
 
-        add(new JLabel("Mật khẩu:"));
+        mainPanel.add(new JLabel("Mật khẩu:"));
         txtPassword = new JPasswordField();
-        add(txtPassword);
-
+        mainPanel.add(txtPassword);
+        
         JButton btnLogin = new JButton("Đăng nhập");
         JButton btnSignUp = new JButton("Đăng ký");
-        add(btnLogin);
-        add(btnSignUp);
-
+        mainPanel.add(btnLogin);
+        mainPanel.add(btnSignUp);
+        add(mainPanel);
+        
         btnLogin.addActionListener(e -> login());
         btnSignUp.addActionListener(e -> {
             this.dispose();
