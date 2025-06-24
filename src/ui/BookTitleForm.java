@@ -105,7 +105,7 @@ public class BookTitleForm extends JFrame {
     private void addBookTitle() {
         BookTitle book = getInputBookTitle();
         if (bookTitleService.addBookTitle(book)) {
-            JOptionPane.showMessageDialog(this, "Thêm thành công");
+            JOptionPane.showMessageDialog(this, "Thêm đầu sách thành công");
             loadData();
             clearForm();
         } else {

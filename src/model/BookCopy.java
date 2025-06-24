@@ -7,16 +7,19 @@ package model;
 public class BookCopy {
     private String maSach;
     private String tenSach;
-    private String trangThai;    // VD: "Có sẵn", "Đã mượn"
-    private String maDauSach;    // Khóa ngoại đến bảng tb_dausach
+    private String trangThai;
+    private String maDauSach;
+    private String anhSach; // Thêm thuộc tính mới
 
-    public BookCopy() {}
+    public BookCopy() {
+    }
 
-    public BookCopy(String maSach, String tenSach, String trangThai, String maDauSach) {
+    public BookCopy(String maSach, String tenSach, String trangThai, String maDauSach, String anhSach) {
         this.maSach = maSach;
         this.tenSach = tenSach;
         this.trangThai = trangThai;
         this.maDauSach = maDauSach;
+        this.anhSach = anhSach;
     }
 
     public String getMaSach() {
@@ -51,6 +54,14 @@ public class BookCopy {
         this.maDauSach = maDauSach;
     }
 
+    public String getAnhSach() {
+        return anhSach;
+    }
+
+    public void setAnhSach(String anhSach) {
+        this.anhSach = anhSach;
+    }
+
     @Override
     public String toString() {
         return "BookCopy{" +
@@ -58,6 +69,7 @@ public class BookCopy {
                 ", tenSach='" + tenSach + '\'' +
                 ", trangThai='" + trangThai + '\'' +
                 ", maDauSach='" + maDauSach + '\'' +
+                ", anhSach='" + anhSach + '\'' +
                 '}';
     }
 }

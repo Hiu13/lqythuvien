@@ -17,47 +17,51 @@ public class BookCopyForm extends JFrame {
     private JTable table;
     private DefaultTableModel model;
 
-    private JTextField txtMaSach, txtTinhTrang, txtTenSach;
+    private JTextField txtMaSach, txtTenSach, txtTinhTrang, txtAnhSach;
     private JComboBox<String> cbMaDauSach;
 
     public BookCopyForm() {
         bookCopyService = new BookCopyService();
         bookTitleService = new BookTitleService();
         initUI();
-        loadData();
         loadMaDauSach();
+        loadData();
     }
 
     private void initUI() {
         setTitle("Quản lý Bản sao sách");
-        setSize(750, 500);
+        setSize(850, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
         // Table
-        model = new DefaultTableModel(new Object[]{"Mã Sách", "Mã Đầu Sách", "Tình Trạng", "Tên Sách"}, 0);
+        model = new DefaultTableModel(new Object[]{"Mã Sách", "Tên Sách", "Tình Trạng", "Mã Đầu Sách", "Ảnh Sách"}, 0);
         table = new JTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
 
         // Form
-        JPanel formPanel = new JPanel(new GridLayout(4, 2, 10, 10));
+        JPanel formPanel = new JPanel(new GridLayout(5, 2, 10, 10));
         formPanel.setBorder(BorderFactory.createTitledBorder("Thông tin bản sao"));
 
         txtMaSach = new JTextField();
-        cbMaDauSach = new JComboBox<>();
-        txtTinhTrang = new JTextField();
         txtTenSach = new JTextField();
+        txtTinhTrang = new JTextField();
+        txtAnhSach = new JTextField();
+        cbMaDauSach = new JComboBox<>();
+
+        cbMaDauSach.addActionListener(e -> updateTenSach());
 
         formPanel.add(new JLabel("Mã Sách:"));
         formPanel.add(txtMaSach);
         formPanel.add(new JLabel("Mã Đầu Sách:"));
         formPanel.add(cbMaDauSach);
-        formPanel.add(new JLabel("Tình Trạng:"));
-        formPanel.add(txtTinhTrang);
         formPanel.add(new JLabel("Tên Sách:"));
         formPanel.add(txtTenSach);
-
+        formPanel.add(new JLabel("Tình Trạng:"));
+        formPanel.add(txtTinhTrang);
+        formPanel.add(new JLabel("Ảnh Sách (path):"));
+        formPanel.add(txtAnhSach);
 
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
@@ -90,6 +94,17 @@ public class BookCopyForm extends JFrame {
         for (BookTitle t : titles) {
             cbMaDauSach.addItem(t.getMaDauSach());
         }
+        updateTenSach(); // Cập nhật tên sách đầu tiên khi load
+    }
+
+    private void updateTenSach() {
+        String maDauSach = (String) cbMaDauSach.getSelectedItem();
+        if (maDauSach != null) {
+            BookTitle title = bookTitleService.findById(maDauSach);
+            if (title != null) {
+                txtTenSach.setText(title.getTenSach());
+            }
+        }
     }
 
     private void loadData() {
@@ -98,9 +113,10 @@ public class BookCopyForm extends JFrame {
         for (BookCopy b : list) {
             model.addRow(new Object[]{
                     b.getMaSach(),
-                    b.getMaDauSach(),
+                    b.getTenSach(),
                     b.getTrangThai(),
-                    b.getTenSach()
+                    b.getMaDauSach(),
+                    b.getAnhSach()
             });
         }
     }
@@ -142,24 +158,28 @@ public class BookCopyForm extends JFrame {
         int row = table.getSelectedRow();
         if (row >= 0) {
             txtMaSach.setText(model.getValueAt(row, 0).toString());
-            cbMaDauSach.setSelectedItem(model.getValueAt(row, 1).toString());
+            txtTenSach.setText(model.getValueAt(row, 1).toString());
             txtTinhTrang.setText(model.getValueAt(row, 2).toString());
-            txtTenSach.setText(model.getValueAt(row, 3).toString());
+            cbMaDauSach.setSelectedItem(model.getValueAt(row, 3).toString());
+            txtAnhSach.setText(model.getValueAt(row, 4).toString());
         }
     }
 
     private void clearForm() {
         txtMaSach.setText("");
         txtTinhTrang.setText("");
+        txtAnhSach.setText("");
         cbMaDauSach.setSelectedIndex(0);
+        updateTenSach();
     }
 
     private BookCopy getInputBook() {
-    return new BookCopy(
-            txtMaSach.getText().trim(),
-            txtTinhTrang.getText().trim(),
-            (String) cbMaDauSach.getSelectedItem(),
-            txtTenSach.getText().trim()
-    );
-}
+        return new BookCopy(
+                txtMaSach.getText().trim(),
+                txtTenSach.getText().trim(),
+                txtTinhTrang.getText().trim(),
+                (String) cbMaDauSach.getSelectedItem(),
+                txtAnhSach.getText().trim()
+        );
+    }
 }

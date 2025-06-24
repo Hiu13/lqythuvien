@@ -10,7 +10,21 @@ import java.util.List;
 /**
  * DAO class thao tác với bảng tb_phieumuon.
  */
-public class LoanSlipDAO {
+public class LoanSlipDAO {public boolean borrowBook(String maNguoiMuon, String maSach, String ngayMuon) {
+    String sql = "INSERT INTO tb_phieumuon (MaNguoiMuon, MaSach, NgayMuon) VALUES (?, ?, ?)";
+    try (Connection conn = DBConnect.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setString(1, maNguoiMuon);
+        stmt.setString(2, maSach);
+        stmt.setString(3, ngayMuon);
+
+        return stmt.executeUpdate() > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
 
     public boolean insert(LoanSlip slip) {
         String sql = "INSERT INTO tb_phieumuon (MaPhieuMuon, NgayMuon, HanTra, MaSach, MaNguoiMuon, NgayTra) VALUES (?, ?, ?, ?, ?, ?)";

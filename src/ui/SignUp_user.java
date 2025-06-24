@@ -1,35 +1,35 @@
 package ui;
+
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import util.DBConnect;
 
 public class SignUp_user extends JFrame {
-    private JTextField txtTenNguoiMuon;
+    private JTextField txtMa;
+    private JTextField txtTen;
     private JTextField txtEmail;
     private JPasswordField txtPassword;
-    private JPasswordField txtConfirmPassword;
+    private JTextField txtDiaChi;
+    private JTextField txtSDT;
 
     public SignUp_user() {
         setTitle("Đăng ký người mượn");
-        setSize(400, 300);
+        setSize(400, 350);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        // Tạo panel chính
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
-        panel.setBorder(
-            BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Thông tin đăng ký"),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)
-            )
-        );
+        JPanel panel = new JPanel(new GridLayout(7, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        panel.add(new JLabel("Mã người mượn:"));
+        txtMa = new JTextField();
+        panel.add(txtMa);
 
         panel.add(new JLabel("Tên người mượn:"));
-        txtTenNguoiMuon = new JTextField();
-        panel.add(txtTenNguoiMuon);
+        txtTen = new JTextField();
+        panel.add(txtTen);
 
         panel.add(new JLabel("Email:"));
         txtEmail = new JTextField();
@@ -39,61 +39,63 @@ public class SignUp_user extends JFrame {
         txtPassword = new JPasswordField();
         panel.add(txtPassword);
 
-        panel.add(new JLabel("Nhắc lại mật khẩu:"));
-        txtConfirmPassword = new JPasswordField();
-        panel.add(txtConfirmPassword);
+        panel.add(new JLabel("Địa chỉ:"));
+        txtDiaChi = new JTextField();
+        panel.add(txtDiaChi);
 
-        JButton btnRegister = new JButton("Đăng ký");
-        JButton btnExit = new JButton("Thoát");
-        panel.add(btnRegister);
-        panel.add(btnExit);
+        panel.add(new JLabel("Số điện thoại:"));
+        txtSDT = new JTextField();
+        panel.add(txtSDT);
 
-        add(panel); // Thêm panel vào frame
+        JButton btnDangKy = new JButton("Đăng ký");
+        JButton btnQuayLai = new JButton("Quay lại");
+        panel.add(btnDangKy);
+        panel.add(btnQuayLai);
 
-        btnRegister.addActionListener(e -> register());
-        btnExit.addActionListener(e -> System.exit(0));
+        add(panel);
+
+        btnDangKy.addActionListener(e -> signUp());
+        btnQuayLai.addActionListener(e -> {
+            this.dispose();
+            new Login_user().setVisible(true);
+        });
     }
 
-    private void register() {
-        String tenNguoiMuon = txtTenNguoiMuon.getText().trim();
+    private void signUp() {
+        String ma = txtMa.getText().trim();
+        String ten = txtTen.getText().trim();
         String email = txtEmail.getText().trim();
-        String pass = new String(txtPassword.getPassword()).trim();
-        String confirmPass = new String(txtConfirmPassword.getPassword()).trim();
+        String password = new String(txtPassword.getPassword()).trim();
+        String diaChi = txtDiaChi.getText().trim();
+        String sdt = txtSDT.getText().trim();
 
-        if (tenNguoiMuon.isEmpty() || email.isEmpty() || pass.isEmpty() || confirmPass.isEmpty()) {
+        if (ma.isEmpty() || ten.isEmpty() || email.isEmpty() || password.isEmpty() || diaChi.isEmpty() || sdt.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
             return;
         }
 
-        if (!pass.equals(confirmPass)) {
-            JOptionPane.showMessageDialog(this, "Mật khẩu và nhắc lại mật khẩu không khớp!");
-            return;
-        }
-
         try (Connection conn = DBConnect.getConnection()) {
-            String sql = "INSERT INTO tb_nguoimuon (MaNguoiMuon, TenNguoiMuon, Gmail, password) VALUES (?, ?, ?, ?)";
-            String maNguoiMuon = generateMaNguoiMuon();
-
+            String sql = "INSERT INTO tb_nguoimuon (MaNguoiMuon, TenNguoiMuon, Gmail, password, DiaChi, SDT) VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, maNguoiMuon);
-            stmt.setString(2, tenNguoiMuon);
+            stmt.setString(1, ma);
+            stmt.setString(2, ten);
             stmt.setString(3, email);
-            stmt.setString(4, pass);
+            stmt.setString(4, password);
+            stmt.setString(5, diaChi);
+            stmt.setString(6, sdt);
 
-            stmt.executeUpdate();
-
-            JOptionPane.showMessageDialog(this, "Đăng ký thành công! Mã người mượn: " + maNguoiMuon);
-            this.dispose();
-            // new UserLogin().setVisible(true); // Mở form login nếu muốn
-        } catch (SQLException ex) {
+            int rows = stmt.executeUpdate();
+            if (rows > 0) {
+                JOptionPane.showMessageDialog(this, "Đăng ký thành công!");
+                this.dispose();
+                new Login_user().setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(this, "Đăng ký thất bại!");
+            }
+        } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi đăng ký: " + ex.getMessage());
         }
-    }
-
-    private String generateMaNguoiMuon() {
-        int random = (int)(Math.random() * 900 + 100);
-        return "NM" + random;
     }
 
     public static void main(String[] args) {

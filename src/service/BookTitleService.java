@@ -7,6 +7,11 @@ import java.util.Optional;
 
 public class BookTitleService {
     private final BookTitleDAO bookTitleDAO;
+    
+    public BookTitle findById(String maDauSach) {
+    return bookTitleDAO.findById(maDauSach);
+}
+
 
     public BookTitleService() {
         this.bookTitleDAO = new BookTitleDAO();
