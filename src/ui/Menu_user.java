@@ -2,12 +2,19 @@ package ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import util.DBConnect;
 
 public class Menu_user extends JFrame {
-    private String maNguoiMuon; // Mã người mượn, truyền vào khi login
+    private String maNguoiMuon;
+    private String tenNguoiMuon;
 
     public Menu_user(String maNguoiMuon) {
         this.maNguoiMuon = maNguoiMuon;
+        this.tenNguoiMuon = fetchTenNguoiMuon(maNguoiMuon);
+
         setTitle("Giao diện chính - Người mượn");
         setSize(600, 400);
         setLocationRelativeTo(null);
@@ -15,48 +22,67 @@ public class Menu_user extends JFrame {
         setLayout(new BorderLayout());
 
         // Label chào mừng
-        JLabel lblWelcome = new JLabel("Xin chào, " + maNguoiMuon, SwingConstants.CENTER);
+        JLabel lblWelcome = new JLabel("Xin chào, " + tenNguoiMuon, SwingConstants.CENTER);
         lblWelcome.setFont(new Font("Arial", Font.BOLD, 18));
-        add(lblWelcome, BorderLayout.NORTH);
+        add(lblWelcome, BorderLayout.CENTER);
 
-        // Panel chức năng
-        JPanel panel = new JPanel(new GridLayout(3, 1, 10, 10));
-        panel.setBorder(
-            BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Chức năng"),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)
-            )
-        );
+        // Tạo menu bar
+        JMenuBar menuBar = new JMenuBar();
 
-        JButton btnFindBook = new JButton("Tìm sách");
-        JButton btnBorrowBook = new JButton("Mượn sách");
-        JButton btnViewBook = new JButton("Xem thông tin sách");
+        JMenu menuChucNang = new JMenu("Hệ Thống");
+        JMenuItem itemFindBook = new JMenuItem("Tìm sách");
+        JMenuItem itemBorrowBook = new JMenuItem("Mượn sách");
+        JMenuItem itemViewBook = new JMenuItem("Xem thông tin sách");
+        JMenuItem itemBill = new JMenuItem("Hóa đơn mượn sách");
+        JMenuItem itemPayBill = new JMenuItem("Thanh toán hóa đơn");
 
-        panel.add(btnFindBook);
-        panel.add(btnBorrowBook);
-        panel.add(btnViewBook);
+        itemBill.addActionListener(e -> showBill());
 
-        add(panel, BorderLayout.CENTER);
+        JMenu menuTaiKhoan = new JMenu("Tài khoản");
+        JMenuItem itemLogout = new JMenuItem("Đăng xuất");
 
-        // Nút đăng xuất
-        JButton btnLogout = new JButton("Đăng xuất");
-        add(btnLogout, BorderLayout.SOUTH);
+        menuChucNang.add(itemFindBook);
+        menuChucNang.add(itemBorrowBook);
+        menuChucNang.add(itemViewBook);
+        menuTaiKhoan.add(itemLogout);
+        menuChucNang.add(itemPayBill);
+        menuChucNang.add(itemBill);
+        menuBar.add(menuChucNang);
+        menuBar.add(menuTaiKhoan);
+        setJMenuBar(menuBar);
 
-        // Sự kiện
-        btnLogout.addActionListener(e -> {
+        itemFindBook.addActionListener(e -> findBook());
+        itemBorrowBook.addActionListener(e -> borrowBook());
+        itemViewBook.addActionListener(e -> viewBook());
+        itemPayBill.addActionListener(e -> showQRCode());
+        itemLogout.addActionListener(e -> {
             this.dispose();
             new Login_user().setVisible(true);
         });
+    }
 
-        // Liên kết các chức năng
-        btnFindBook.addActionListener(e -> findBook());
-        btnBorrowBook.addActionListener(e -> borrowBook());
-        btnViewBook.addActionListener(e -> viewBook());
+    private String fetchTenNguoiMuon(String maNguoiMuon) {
+        String ten = "Người dùng";
+        try (Connection conn = DBConnect.getConnection()) {
+            String sql = "SELECT TenNguoiMuon FROM tb_nguoimuon WHERE MaNguoiMuon = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, maNguoiMuon);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                ten = rs.getString("TenNguoiMuon");
+            }
+            rs.close();
+            stmt.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return ten;
     }
 
     private void findBook() {
         JTextField keywordField = new JTextField();
-        int result = JOptionPane.showConfirmDialog(this, keywordField, "Nhập từ khóa tìm sách", JOptionPane.OK_CANCEL_OPTION);
+        int result = JOptionPane.showConfirmDialog(this, keywordField, "Nhập từ khóa tìm sách",
+                JOptionPane.OK_CANCEL_OPTION);
         if (result == JOptionPane.OK_OPTION) {
             String keyword = keywordField.getText().trim();
             if (!keyword.isEmpty()) {
@@ -68,65 +94,132 @@ public class Menu_user extends JFrame {
     }
 
     private void borrowBook() {
-    JFrame frame = new JFrame("Mượn sách");
-    frame.setSize(400, 300);
-    frame.setLocationRelativeTo(this);
-    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        JFrame frame = new JFrame("Mượn sách");
+        frame.setSize(400, 300);
+        frame.setLocationRelativeTo(this);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-    JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
-    panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-    JLabel lblMaSach = new JLabel("Mã sách:");
-    JTextField txtMaSach = new JTextField();
+        JLabel lblMaSach = new JLabel("Mã sách:");
+        JTextField txtMaSach = new JTextField();
 
-    JLabel lblNgayMuon = new JLabel("Ngày mượn (yyyy-MM-dd):");
-    JTextField txtNgayMuon = new JTextField();
+        JLabel lblNgayMuon = new JLabel("Ngày mượn (yyyy-MM-dd):");
+        JTextField txtNgayMuon = new JTextField();
 
-    JButton btnSubmit = new JButton("Xác nhận mượn");
+        JButton btnSubmit = new JButton("Xác nhận mượn");
 
-    panel.add(lblMaSach);
-    panel.add(txtMaSach);
-    panel.add(lblNgayMuon);
-    panel.add(txtNgayMuon);
-    panel.add(new JLabel()); // trống
-    panel.add(btnSubmit);
+        panel.add(lblMaSach);
+        panel.add(txtMaSach);
+        panel.add(lblNgayMuon);
+        panel.add(txtNgayMuon);
+        panel.add(new JLabel());
+        panel.add(btnSubmit);
 
-    frame.add(panel);
-    frame.setVisible(true);
+        frame.add(panel);
+        frame.setVisible(true);
 
-    btnSubmit.addActionListener(e -> {
-        String maSach = txtMaSach.getText().trim();
-        String ngayMuon = txtNgayMuon.getText().trim();
+        btnSubmit.addActionListener(e -> {
+            String maSach = txtMaSach.getText().trim();
+            String ngayMuon = txtNgayMuon.getText().trim();
 
-        if (maSach.isEmpty() || ngayMuon.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Vui lòng nhập đầy đủ thông tin!");
-            return;
-        }
-
-        try {
-            // Ví dụ dùng DAO để insert phiếu mượn (tùy tên bảng và cột thực tế của bạn)
-            dao.LoanSlipDAO dao = new dao.LoanSlipDAO();
-            boolean success = dao.borrowBook(maNguoiMuon, maSach, ngayMuon); // viết phương thức này
-
-            if (success) {
-                JOptionPane.showMessageDialog(frame, "Mượn sách thành công!");
-                frame.dispose();
-            } else {
-                JOptionPane.showMessageDialog(frame, "Mượn sách thất bại! Có thể sách đã được mượn.");
+            if (maSach.isEmpty() || ngayMuon.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Vui lòng nhập đầy đủ thông tin!");
+                return;
             }
+
+            try {
+                dao.LoanSlipDAO dao = new dao.LoanSlipDAO();
+                boolean success = dao.borrowBook(maNguoiMuon, maSach, ngayMuon);
+
+                if (success) {
+                    JOptionPane.showMessageDialog(frame, "Mượn sách thành công!");
+                    frame.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Mượn sách thất bại! Có thể sách đã được mượn.");
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(frame, "Lỗi khi mượn sách: " + ex.getMessage());
+            }
+        });
+    }
+
+    private void showBill() {
+        try (Connection conn = util.DBConnect.getConnection()) {
+            String sql = "SELECT MaSach, NgayMuon, HanTra FROM tb_phieumuon WHERE MaNguoiMuon = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, maNguoiMuon);
+            ResultSet rs = stmt.executeQuery();
+
+            if (!rs.isBeforeFirst()) {
+                JOptionPane.showMessageDialog(this, "Bạn chưa có hóa đơn mượn sách nào.");
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            while (rs.next()) {
+                String maSach = rs.getString("MaSach");
+                String ngayMuon = rs.getString("NgayMuon");
+                String hanTra = rs.getString("HanTra");
+
+                // Tính phí nếu quá hạn
+                long phi = 0;
+                java.time.LocalDate hanTraDate = java.time.LocalDate.parse(hanTra);
+                java.time.LocalDate today = java.time.LocalDate.now();
+                if (today.isAfter(hanTraDate)) {
+                    long daysLate = java.time.temporal.ChronoUnit.DAYS.between(hanTraDate, today);
+                    phi = daysLate * 5000; // Ví dụ: 5000 đồng/ngày quá hạn
+                }
+
+                sb.append("Mã sách: ").append(maSach)
+                        .append("\nNgày mượn: ").append(ngayMuon)
+                        .append("\nHạn trả: ").append(hanTra)
+                        .append("\nPhí quá hạn: ").append(phi).append(" VNĐ")
+                        .append("\n-----------------------\n");
+
+            }
+
+            rs.close();
+            stmt.close();
+
+            JTextArea textArea = new JTextArea(sb.toString());
+            textArea.setEditable(false);
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setPreferredSize(new Dimension(400, 300));
+
+            JOptionPane.showMessageDialog(this, scrollPane, "Hóa đơn mượn sách", JOptionPane.INFORMATION_MESSAGE);
+
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Lỗi khi mượn sách: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Lỗi khi lấy hóa đơn: " + ex.getMessage());
         }
-    });
-}
+    }
+    
+    private void showQRCode() {
+    try {
+        // Giả sử bạn có file qr.png nằm trong thư mục project (hoặc src/ui)
+        ImageIcon icon = new ImageIcon(getClass().getResource("/ui/qr.png"));
 
+        
+        // Scale cho đẹp
+        Image img = icon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+        icon = new ImageIcon(img);
+
+        JLabel label = new JLabel(icon);
+        JOptionPane.showMessageDialog(this, label, "Quét mã QR để thanh toán", JOptionPane.PLAIN_MESSAGE);
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Không tìm thấy ảnh mã QR!");
+    }
+}
 
     private void viewBook() {
         new BookListFrame().setVisible(true);
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new Menu_user("Xin chào người dùng đăng nhập").setVisible(true)); // test thử
+        SwingUtilities.invokeLater(() -> new Menu_user("S001").setVisible(true)); // test thử
     }
 }
