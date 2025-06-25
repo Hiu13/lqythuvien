@@ -1,4 +1,5 @@
 package ui;
+
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
@@ -15,14 +16,12 @@ public class Login_user extends JFrame {
         setSize(400, 200);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        
+
         JPanel mainPanel = new JPanel(new GridLayout(3, 2, 10, 10));
         mainPanel.setBorder(
-            BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Thông tin đăng ký"),
-                BorderFactory.createEmptyBorder(10,10,10,10)
-            )
-        );
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createTitledBorder("Thông tin đăng ký"),
+                        BorderFactory.createEmptyBorder(10, 10, 10, 10)));
         mainPanel.add(new JLabel("Email:"));
         txtEmail = new JTextField();
         mainPanel.add(txtEmail);
@@ -30,13 +29,13 @@ public class Login_user extends JFrame {
         mainPanel.add(new JLabel("Mật khẩu:"));
         txtPassword = new JPasswordField();
         mainPanel.add(txtPassword);
-        
+
         JButton btnLogin = new JButton("Đăng nhập");
         JButton btnSignUp = new JButton("Đăng ký");
         mainPanel.add(btnLogin);
         mainPanel.add(btnSignUp);
         add(mainPanel);
-        
+
         btnLogin.addActionListener(e -> login());
         btnSignUp.addActionListener(e -> {
             this.dispose();
