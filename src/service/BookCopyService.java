@@ -22,6 +22,15 @@ public class BookCopyService {
         }
         return bookCopyDAO.insert(bookCopy);
     }
+public int getSoLuongSach(String maSach) {
+    return bookCopyDAO.getSoLuongSach(maSach);
+}
+
+public boolean giamSoLuong(String maSach) {
+    return bookCopyDAO.giamSoLuong(maSach);
+}
+
+
 
     public boolean updateBookCopy(BookCopy bookCopy) {
         if (bookCopy == null || bookCopy.getMaSach().isEmpty()) {

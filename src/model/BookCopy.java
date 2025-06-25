@@ -9,19 +9,23 @@ public class BookCopy {
     private String tenSach;
     private String trangThai;
     private String maDauSach;
-    private String anhSach; // Thêm thuộc tính mới
+    private String anhSach;
+    private int soLuong;  // ✅ Thuộc tính số lượng sách
 
     public BookCopy() {
     }
 
-    public BookCopy(String maSach, String tenSach, String trangThai, String maDauSach, String anhSach) {
+    // ✅ Constructor đầy đủ
+    public BookCopy(String maSach, String tenSach, String trangThai, String maDauSach, String anhSach, int soLuong) {
         this.maSach = maSach;
         this.tenSach = tenSach;
         this.trangThai = trangThai;
         this.maDauSach = maDauSach;
         this.anhSach = anhSach;
+        this.soLuong = soLuong;
     }
 
+    // Getter & Setter
     public String getMaSach() {
         return maSach;
     }
@@ -62,6 +66,14 @@ public class BookCopy {
         this.anhSach = anhSach;
     }
 
+    public int getSoLuong() {
+        return soLuong;
+    }
+
+    public void setSoLuong(int soLuong) {
+        this.soLuong = soLuong;
+    }
+
     @Override
     public String toString() {
         return "BookCopy{" +
@@ -70,6 +82,7 @@ public class BookCopy {
                 ", trangThai='" + trangThai + '\'' +
                 ", maDauSach='" + maDauSach + '\'' +
                 ", anhSach='" + anhSach + '\'' +
+                ", soLuong=" + soLuong +
                 '}';
     }
 }

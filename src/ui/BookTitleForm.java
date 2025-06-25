@@ -23,14 +23,14 @@ public class BookTitleForm extends JFrame {
 
     private void initUI() {
         setTitle("Quản lý Đầu sách");
-        setSize(900, 550);
+        setSize(950, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
         // Bảng
         model = new DefaultTableModel(
-                new Object[]{"Mã", "Tên", "Số lượng", "Thể loại", "Tác giả", "NXB", "Năm XB"}, 0);
+                new Object[]{"Mã", "Tên", "Số lượng", "Trạng thái", "Thể loại", "Tác giả", "NXB", "Năm XB"}, 0);
         table = new JTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
 
@@ -90,10 +90,12 @@ public class BookTitleForm extends JFrame {
         model.setRowCount(0);
         List<BookTitle> list = bookTitleService.getAllBookTitles();
         for (BookTitle b : list) {
+            String trangThai = b.getSoLuong() > 0 ? "Còn" : "Hết";
             model.addRow(new Object[]{
                     b.getMaDauSach(),
                     b.getTenSach(),
                     b.getSoLuong(),
+                    trangThai,
                     b.getTheLoai(),
                     b.getTacGia(),
                     b.getNxb(),
@@ -141,10 +143,10 @@ public class BookTitleForm extends JFrame {
             txtMaDauSach.setText(model.getValueAt(row, 0).toString());
             txtTenSach.setText(model.getValueAt(row, 1).toString());
             txtSoLuong.setText(model.getValueAt(row, 2).toString());
-            txtTheLoai.setText(model.getValueAt(row, 3).toString());
-            txtTacGia.setText(model.getValueAt(row, 4).toString());
-            txtNhaXuatBan.setText(model.getValueAt(row, 5).toString());
-            txtNamXB.setText(model.getValueAt(row, 6).toString());
+            txtTheLoai.setText(model.getValueAt(row, 4).toString());
+            txtTacGia.setText(model.getValueAt(row, 5).toString());
+            txtNhaXuatBan.setText(model.getValueAt(row, 6).toString());
+            txtNamXB.setText(model.getValueAt(row, 7).toString());
         }
     }
 

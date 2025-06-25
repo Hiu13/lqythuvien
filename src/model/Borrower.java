@@ -7,18 +7,19 @@ package model;
 public class Borrower {
     private String maNguoiMuon;
     private String tenNguoiMuon;
-    private String diaChi;
-    private String gmail;
+    private String DiaChi;
     private String sdt;
+    private String Gmail;
 
     public Borrower() {}
 
-    public Borrower(String maNguoiMuon, String tenNguoiMuon, String diaChi, String gmail, String sdt) {
+    public Borrower(String maNguoiMuon, String tenNguoiMuon, String DiaChi, String sdt, String Gmail) {
         this.maNguoiMuon = maNguoiMuon;
         this.tenNguoiMuon = tenNguoiMuon;
-        this.diaChi = diaChi;
-        this.gmail = gmail;
+        this.DiaChi = DiaChi;
         this.sdt = sdt;
+        this.Gmail = Gmail;
+
     }
 
     public String getMaNguoiMuon() {
@@ -38,19 +39,11 @@ public class Borrower {
     }
 
     public String getDiaChi() {
-        return diaChi;
+        return DiaChi;
     }
 
     public void setDiaChi(String diaChi) {
-        this.diaChi = diaChi;
-    }
-
-    public String getGmail() {
-        return gmail;
-    }
-
-    public void setGmail(String gmail) {
-        this.gmail = gmail;
+        this.DiaChi = diaChi;
     }
 
     public String getSdt() {
@@ -60,15 +53,23 @@ public class Borrower {
     public void setSdt(String sdt) {
         this.sdt = sdt;
     }
+    
+    public String getGmail() {
+        return Gmail;
+    }
+
+    public void setGmail(String Gmail) {
+        this.Gmail = Gmail;
+    }
 
     @Override
     public String toString() {
         return "Borrower{" +
                 "maNguoiMuon='" + maNguoiMuon + '\'' +
                 ", tenNguoiMuon='" + tenNguoiMuon + '\'' +
-                ", diaChi='" + diaChi + '\'' +
-                ", gmail='" + gmail + '\'' +
+                ", diaChi='" + DiaChi + '\'' +
                 ", sdt='" + sdt + '\'' +
+                ", Gmail='" + Gmail + '\'' +
                 '}';
     }
 }

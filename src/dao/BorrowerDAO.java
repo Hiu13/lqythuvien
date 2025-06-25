@@ -16,12 +16,12 @@ public class BorrowerDAO {
         String sql = "INSERT INTO tb_nguoimuon (MaNguoiMuon, TenNguoiMuon, DiaChi, Gmail, SDT) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-             
+
             stmt.setString(1, user.getMaNguoiMuon());
             stmt.setString(2, user.getTenNguoiMuon());
             stmt.setString(3, user.getDiaChi());
-            stmt.setString(4, user.getGmail());
-            stmt.setString(5, user.getSdt());
+            stmt.setString(4, user.getGmail()); // ✅ Gmail đúng vị trí
+            stmt.setString(5, user.getSdt());   // ✅ SDT đúng vị trí
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -30,14 +30,14 @@ public class BorrowerDAO {
     }
 
     public boolean update(Borrower user) {
-        String sql = "UPDATE tb_nguoimuon SET TenNguoiMuon=?, DiaChi=?, Gmail=?, SDT=? WHERE MaNguoiMuon=?";
+        String sql = "UPDATE tb_nguoimuon SET TenNguoiMuon=?, DiaChi=?, SDT=?, Gmail=? WHERE MaNguoiMuon=?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-             
+
             stmt.setString(1, user.getTenNguoiMuon());
             stmt.setString(2, user.getDiaChi());
-            stmt.setString(3, user.getGmail());
-            stmt.setString(4, user.getSdt());
+            stmt.setString(3, user.getSdt());     // ✅ SDT đúng vị trí
+            stmt.setString(4, user.getGmail());   // ✅ Gmail đúng vị trí
             stmt.setString(5, user.getMaNguoiMuon());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -50,7 +50,7 @@ public class BorrowerDAO {
         String sql = "DELETE FROM tb_nguoimuon WHERE MaNguoiMuon=?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-             
+
             stmt.setString(1, maNguoiMuon);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -65,14 +65,14 @@ public class BorrowerDAO {
         try (Connection conn = DBConnect.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-             
+
             while (rs.next()) {
                 Borrower b = new Borrower(
                     rs.getString("MaNguoiMuon"),
                     rs.getString("TenNguoiMuon"),
                     rs.getString("DiaChi"),
-                    rs.getString("Gmail"),
-                    rs.getString("SDT")
+                    rs.getString("Gmail"),   // ✅ Gmail trước SDT
+                    rs.getString("SDT")      // ✅ SDT sau
                 );
                 list.add(b);
             }
@@ -86,7 +86,7 @@ public class BorrowerDAO {
         String sql = "SELECT * FROM tb_nguoimuon WHERE MaNguoiMuon=?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-             
+
             stmt.setString(1, maNguoiMuon);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -94,8 +94,8 @@ public class BorrowerDAO {
                     rs.getString("MaNguoiMuon"),
                     rs.getString("TenNguoiMuon"),
                     rs.getString("DiaChi"),
-                    rs.getString("Gmail"),
-                    rs.getString("SDT")
+                    rs.getString("Gmail"),   // ✅ Gmail trước
+                    rs.getString("SDT")      // ✅ SDT sau
                 );
             }
         } catch (SQLException e) {

@@ -17,7 +17,7 @@ public class BookCopyForm extends JFrame {
     private JTable table;
     private DefaultTableModel model;
 
-    private JTextField txtMaSach, txtTenSach, txtTinhTrang, txtAnhSach;
+    private JTextField txtMaSach, txtTenSach, txtTinhTrang, txtAnhSach, txtSoLuong;
     private JComboBox<String> cbMaDauSach;
 
     public BookCopyForm() {
@@ -30,27 +30,31 @@ public class BookCopyForm extends JFrame {
 
     private void initUI() {
         setTitle("Quản lý Bản sao sách");
-        setSize(850, 500);
+        setSize(950, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
         // Table
-        model = new DefaultTableModel(new Object[]{"Mã Sách", "Tên Sách", "Tình Trạng", "Mã Đầu Sách", "Ảnh Sách"}, 0);
+        model = new DefaultTableModel(new Object[]{"Mã Sách", "Tên Sách", "Tình Trạng", "Mã Đầu Sách", "Ảnh Sách", "Số Lượng"}, 0);
         table = new JTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
 
         // Form
-        JPanel formPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        JPanel formPanel = new JPanel(new GridLayout(6, 2, 10, 10));
         formPanel.setBorder(BorderFactory.createTitledBorder("Thông tin bản sao"));
 
         txtMaSach = new JTextField();
         txtTenSach = new JTextField();
         txtTinhTrang = new JTextField();
         txtAnhSach = new JTextField();
+        txtSoLuong = new JTextField();
         cbMaDauSach = new JComboBox<>();
 
-        cbMaDauSach.addActionListener(e -> updateTenSach());
+        cbMaDauSach.addActionListener(e -> {
+            updateTenSach();
+            updateTrangThai();
+        });
 
         formPanel.add(new JLabel("Mã Sách:"));
         formPanel.add(txtMaSach);
@@ -62,6 +66,8 @@ public class BookCopyForm extends JFrame {
         formPanel.add(txtTinhTrang);
         formPanel.add(new JLabel("Ảnh Sách (path):"));
         formPanel.add(txtAnhSach);
+        formPanel.add(new JLabel("Số Lượng:"));
+        formPanel.add(txtSoLuong);
 
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
@@ -94,7 +100,8 @@ public class BookCopyForm extends JFrame {
         for (BookTitle t : titles) {
             cbMaDauSach.addItem(t.getMaDauSach());
         }
-        updateTenSach(); // Cập nhật tên sách đầu tiên khi load
+        updateTenSach();
+        updateTrangThai();
     }
 
     private void updateTenSach() {
@@ -103,6 +110,17 @@ public class BookCopyForm extends JFrame {
             BookTitle title = bookTitleService.findById(maDauSach);
             if (title != null) {
                 txtTenSach.setText(title.getTenSach());
+            }
+        }
+    }
+
+    private void updateTrangThai() {
+        String maDauSach = (String) cbMaDauSach.getSelectedItem();
+        if (maDauSach != null) {
+            BookTitle title = bookTitleService.findById(maDauSach);
+            if (title != null) {
+                int soLuong = title.getSoLuong();
+                txtTinhTrang.setText(soLuong > 0 ? "Còn" : "Không còn");
             }
         }
     }
@@ -116,13 +134,15 @@ public class BookCopyForm extends JFrame {
                     b.getTenSach(),
                     b.getTrangThai(),
                     b.getMaDauSach(),
-                    b.getAnhSach()
+                    b.getAnhSach(),
+                    b.getSoLuong()
             });
         }
     }
 
     private void addBook() {
         BookCopy book = getInputBook();
+        if (book == null) return;
         if (bookCopyService.addBookCopy(book)) {
             JOptionPane.showMessageDialog(this, "Thêm thành công");
             loadData();
@@ -134,6 +154,7 @@ public class BookCopyForm extends JFrame {
 
     private void updateBook() {
         BookCopy book = getInputBook();
+        if (book == null) return;
         if (bookCopyService.updateBookCopy(book)) {
             JOptionPane.showMessageDialog(this, "Cập nhật thành công");
             loadData();
@@ -162,6 +183,7 @@ public class BookCopyForm extends JFrame {
             txtTinhTrang.setText(model.getValueAt(row, 2).toString());
             cbMaDauSach.setSelectedItem(model.getValueAt(row, 3).toString());
             txtAnhSach.setText(model.getValueAt(row, 4).toString());
+            txtSoLuong.setText(model.getValueAt(row, 5).toString());
         }
     }
 
@@ -169,17 +191,28 @@ public class BookCopyForm extends JFrame {
         txtMaSach.setText("");
         txtTinhTrang.setText("");
         txtAnhSach.setText("");
+        txtSoLuong.setText("");
         cbMaDauSach.setSelectedIndex(0);
         updateTenSach();
+        updateTrangThai();
     }
 
     private BookCopy getInputBook() {
+        int soLuong;
+        try {
+            soLuong = Integer.parseInt(txtSoLuong.getText().trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Số lượng phải là số nguyên!");
+            return null;
+        }
+
         return new BookCopy(
                 txtMaSach.getText().trim(),
                 txtTenSach.getText().trim(),
                 txtTinhTrang.getText().trim(),
                 (String) cbMaDauSach.getSelectedItem(),
-                txtAnhSach.getText().trim()
+                txtAnhSach.getText().trim(),
+                soLuong
         );
     }
 }

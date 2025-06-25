@@ -1,3 +1,5 @@
+// LoanSlipForm.java - Đã cập nhật để kiểm tra và trừ số lượng sách khi mượn
+
 package ui;
 
 import model.LoanSlip;
@@ -46,12 +48,10 @@ public class LoanSlipForm extends JFrame {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Table
         model = new DefaultTableModel(new Object[]{"Mã PM", "Mã Người mượn", "Mã Sách", "Ngày mượn", "Hạn trả", "Ngày trả"}, 0);
         table = new JTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
 
-        // Form
         JPanel formPanel = new JPanel(new GridLayout(7, 2, 10, 10));
         formPanel.setBorder(BorderFactory.createTitledBorder("Thông tin phiếu mượn"));
 
@@ -81,7 +81,6 @@ public class LoanSlipForm extends JFrame {
         formPanel.add(new JLabel("Ngày trả:"));
         formPanel.add(spNgayTra);
 
-        // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         JButton btnAdd = new JButton("Thêm");
         JButton btnUpdate = new JButton("Sửa");
@@ -93,7 +92,6 @@ public class LoanSlipForm extends JFrame {
         buttonPanel.add(btnDelete);
         buttonPanel.add(btnRefresh);
 
-        // Events
         btnAdd.addActionListener(e -> addLoan());
         btnUpdate.addActionListener(e -> updateLoan());
         btnDelete.addActionListener(e -> deleteLoan());
@@ -135,8 +133,15 @@ public class LoanSlipForm extends JFrame {
     }
 
     private void addLoan() {
+        String maSach = (String) cbMaSach.getSelectedItem();
+        if (maSach == null || bookCopyService.getSoLuongSach(maSach) <= 0) {
+            JOptionPane.showMessageDialog(this, "Không thể mượn. Sách đã hết!");
+            return;
+        }
+
         LoanSlip loan = getInputLoan();
         if (loanSlipService.addLoanSlip(loan)) {
+            bookCopyService.giamSoLuong(maSach);
             JOptionPane.showMessageDialog(this, "Thêm thành công");
             loadData();
             clearForm();

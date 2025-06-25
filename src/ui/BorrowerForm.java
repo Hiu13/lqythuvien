@@ -13,7 +13,7 @@ public class BorrowerForm extends JFrame {
     private JTable table;
     private DefaultTableModel model;
 
-    private JTextField txtMaNM, txtTenNM, txtLop, txtSDT, txtEmail;
+    private JTextField txtMaNM, txtTenNM, txtDiaChi, txtSDT, txtGmail;
 
     public BorrowerForm() {
         borrowerService = new BorrowerService();
@@ -29,7 +29,7 @@ public class BorrowerForm extends JFrame {
         setLayout(new BorderLayout());
 
         // Table
-        model = new DefaultTableModel(new Object[]{"Mã", "Tên", "Lớp", "SĐT", "Email"}, 0);
+        model = new DefaultTableModel(new Object[]{"Mã", "Tên", "Địa chỉ", "SĐT", "Email"}, 0);
         table = new JTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
 
@@ -39,20 +39,20 @@ public class BorrowerForm extends JFrame {
 
         txtMaNM = new JTextField();
         txtTenNM = new JTextField();
-        txtLop = new JTextField();
+        txtDiaChi = new JTextField();
         txtSDT = new JTextField();
-        txtEmail = new JTextField();
+        txtGmail = new JTextField();
 
         formPanel.add(new JLabel("Mã người mượn:"));
         formPanel.add(txtMaNM);
         formPanel.add(new JLabel("Tên người mượn:"));
         formPanel.add(txtTenNM);
-        formPanel.add(new JLabel("Lớp:"));
-        formPanel.add(txtLop);
+        formPanel.add(new JLabel("Địa chỉ:"));
+        formPanel.add(txtDiaChi);
         formPanel.add(new JLabel("SĐT:"));
         formPanel.add(txtSDT);
         formPanel.add(new JLabel("Email:"));
-        formPanel.add(txtEmail);
+        formPanel.add(txtGmail);
 
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
@@ -84,11 +84,11 @@ public class BorrowerForm extends JFrame {
         List<Borrower> list = borrowerService.getAllBorrowers();
         for (Borrower b : list) {
             model.addRow(new Object[]{
-                    b.getMaNguoiMuon(),
-                    b.getTenNguoiMuon(),
-                    b.getClass(),
-                    b.getSdt(),
-                    b.getGmail()
+                b.getMaNguoiMuon(),
+                b.getTenNguoiMuon(),
+                b.getDiaChi(),
+                b.getSdt(),
+                b.getGmail()
             });
         }
     }
@@ -131,27 +131,27 @@ public class BorrowerForm extends JFrame {
         if (row >= 0) {
             txtMaNM.setText(model.getValueAt(row, 0).toString());
             txtTenNM.setText(model.getValueAt(row, 1).toString());
-            txtLop.setText(model.getValueAt(row, 2).toString());
+            txtDiaChi.setText(model.getValueAt(row, 2).toString());
             txtSDT.setText(model.getValueAt(row, 3).toString());
-            txtEmail.setText(model.getValueAt(row, 4).toString());
+            txtGmail.setText(model.getValueAt(row, 4).toString());
         }
     }
 
     private void clearForm() {
         txtMaNM.setText("");
         txtTenNM.setText("");
-        txtLop.setText("");
+        txtDiaChi.setText("");
         txtSDT.setText("");
-        txtEmail.setText("");
+        txtGmail.setText("");
     }
 
     private Borrower getInputBorrower() {
         return new Borrower(
-                txtMaNM.getText().trim(),
-                txtTenNM.getText().trim(),
-                txtLop.getText().trim(),
-                txtSDT.getText().trim(),
-                txtEmail.getText().trim()
+            txtMaNM.getText().trim(),
+            txtTenNM.getText().trim(),
+            txtDiaChi.getText().trim(),
+            txtGmail.getText().trim(),
+            txtSDT.getText().trim()
         );
     }
 }

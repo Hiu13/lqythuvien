@@ -1,4 +1,3 @@
-
 package ui;
 
 import javax.swing.*;
@@ -43,7 +42,7 @@ public class MainMenuForm extends JFrame {
         menuLoanForm.addActionListener(e -> new LoanSlipForm().setVisible(true));
         menuLoan.add(menuLoanForm);
 
-        // Thoát
+        // Hệ thống
         JMenu menuSystem = new JMenu("Hệ thống");
         JMenuItem menuExit = new JMenuItem("Thoát");
         menuExit.addActionListener(e -> System.exit(0));
@@ -58,7 +57,7 @@ public class MainMenuForm extends JFrame {
 
         setJMenuBar(menuBar);
 
-        // Giao diện trung tâm (placeholder)
+        // Giao diện chính (welcome)
         JLabel welcomeLabel = new JLabel("Chào mừng đến với hệ thống quản lý thư viện!", JLabel.CENTER);
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 22));
         add(welcomeLabel, BorderLayout.CENTER);
