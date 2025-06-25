@@ -4,10 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import util.DBConnect;
 
 public class SignUp_user extends JFrame {
-    private JTextField txtMa;
     private JTextField txtTen;
     private JTextField txtEmail;
     private JPasswordField txtPassword;
@@ -16,16 +16,12 @@ public class SignUp_user extends JFrame {
 
     public SignUp_user() {
         setTitle("Đăng ký người mượn");
-        setSize(400, 350);
+        setSize(400, 300);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        JPanel panel = new JPanel(new GridLayout(7, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        panel.add(new JLabel("Mã người mượn:"));
-        txtMa = new JTextField();
-        panel.add(txtMa);
 
         panel.add(new JLabel("Tên người mượn:"));
         txtTen = new JTextField();
@@ -62,22 +58,23 @@ public class SignUp_user extends JFrame {
     }
 
     private void signUp() {
-        String ma = txtMa.getText().trim();
         String ten = txtTen.getText().trim();
         String email = txtEmail.getText().trim();
         String password = new String(txtPassword.getPassword()).trim();
         String diaChi = txtDiaChi.getText().trim();
         String sdt = txtSDT.getText().trim();
 
-        if (ma.isEmpty() || ten.isEmpty() || email.isEmpty() || password.isEmpty() || diaChi.isEmpty() || sdt.isEmpty()) {
+        if (ten.isEmpty() || email.isEmpty() || password.isEmpty() || diaChi.isEmpty() || sdt.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
             return;
         }
 
         try (Connection conn = DBConnect.getConnection()) {
+            String maMoi = generateMaNguoiMuon(conn);
+
             String sql = "INSERT INTO tb_nguoimuon (MaNguoiMuon, TenNguoiMuon, Gmail, password, DiaChi, SDT) VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, ma);
+            stmt.setString(1, maMoi);
             stmt.setString(2, ten);
             stmt.setString(3, email);
             stmt.setString(4, password);
@@ -86,7 +83,7 @@ public class SignUp_user extends JFrame {
 
             int rows = stmt.executeUpdate();
             if (rows > 0) {
-                JOptionPane.showMessageDialog(this, "Đăng ký thành công!");
+                JOptionPane.showMessageDialog(this, "Đăng ký thành công!\nMã người mượn: " + maMoi);
                 this.dispose();
                 new Login_user().setVisible(true);
             } else {
@@ -96,6 +93,26 @@ public class SignUp_user extends JFrame {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi đăng ký: " + ex.getMessage());
         }
+    }
+
+    private String generateMaNguoiMuon(Connection conn) throws Exception {
+        String maMoi;
+        int so = 1;
+        boolean tonTai;
+
+        do {
+            maMoi = String.format("S%03d", so);
+            String sqlCheck = "SELECT MaNguoiMuon FROM tb_nguoimuon WHERE MaNguoiMuon = ?";
+            PreparedStatement stmt = conn.prepareStatement(sqlCheck);
+            stmt.setString(1, maMoi);
+            ResultSet rs = stmt.executeQuery();
+            tonTai = rs.next();
+            rs.close();
+            stmt.close();
+            so++;
+        } while (tonTai);
+
+        return maMoi;
     }
 
     public static void main(String[] args) {
