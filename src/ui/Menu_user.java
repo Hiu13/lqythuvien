@@ -32,29 +32,35 @@ public class Menu_user extends JFrame {
         JMenu menuChucNang = new JMenu("Hệ Thống");
         JMenuItem itemFindBook = new JMenuItem("Tìm sách");
         JMenuItem itemBorrowBook = new JMenuItem("Mượn sách");
+        JMenuItem itemReturnBook = new JMenuItem("Trả sách"); // ✅ mới thêm
         JMenuItem itemViewBook = new JMenuItem("Xem thông tin sách");
         JMenuItem itemBill = new JMenuItem("Hóa đơn mượn sách");
         JMenuItem itemPayBill = new JMenuItem("Thanh toán hóa đơn");
 
-        itemBill.addActionListener(e -> showBill());
-
         JMenu menuTaiKhoan = new JMenu("Tài khoản");
         JMenuItem itemLogout = new JMenuItem("Đăng xuất");
 
+        // Gắn các item vào menu
         menuChucNang.add(itemFindBook);
         menuChucNang.add(itemBorrowBook);
+        menuChucNang.add(itemReturnBook); // ✅ mới thêm
         menuChucNang.add(itemViewBook);
-        menuTaiKhoan.add(itemLogout);
         menuChucNang.add(itemPayBill);
         menuChucNang.add(itemBill);
+
+        menuTaiKhoan.add(itemLogout);
+
         menuBar.add(menuChucNang);
         menuBar.add(menuTaiKhoan);
         setJMenuBar(menuBar);
 
+        // Sự kiện
         itemFindBook.addActionListener(e -> findBook());
         itemBorrowBook.addActionListener(e -> borrowBook());
+        itemReturnBook.addActionListener(e -> new ReturnBookForm().setVisible(true)); // ✅ mới thêm
         itemViewBook.addActionListener(e -> viewBook());
         itemPayBill.addActionListener(e -> showQRCode());
+        itemBill.addActionListener(e -> showBill());
         itemLogout.addActionListener(e -> {
             this.dispose();
             new Login_user().setVisible(true);
@@ -137,7 +143,7 @@ public class Menu_user extends JFrame {
                     JOptionPane.showMessageDialog(frame, "Mượn sách thành công!");
                     frame.dispose();
                 } else {
-                    JOptionPane.showMessageDialog(frame, "Mượn sách thất bại! Có thể sách đã được mượn.");
+                    JOptionPane.showMessageDialog(frame, "Mượn sách thất bại! Có thể sách đã hết.");
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -147,7 +153,7 @@ public class Menu_user extends JFrame {
     }
 
     private void showBill() {
-        try (Connection conn = util.DBConnect.getConnection()) {
+        try (Connection conn = DBConnect.getConnection()) {
             String sql = "SELECT MaSach, NgayMuon, HanTra FROM tb_phieumuon WHERE MaNguoiMuon = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, maNguoiMuon);
@@ -164,13 +170,12 @@ public class Menu_user extends JFrame {
                 String ngayMuon = rs.getString("NgayMuon");
                 String hanTra = rs.getString("HanTra");
 
-                // Tính phí nếu quá hạn
                 long phi = 0;
                 java.time.LocalDate hanTraDate = java.time.LocalDate.parse(hanTra);
                 java.time.LocalDate today = java.time.LocalDate.now();
                 if (today.isAfter(hanTraDate)) {
                     long daysLate = java.time.temporal.ChronoUnit.DAYS.between(hanTraDate, today);
-                    phi = daysLate * 5000; // Ví dụ: 5000 đồng/ngày quá hạn
+                    phi = daysLate * 5000;
                 }
 
                 sb.append("Mã sách: ").append(maSach)
@@ -178,7 +183,6 @@ public class Menu_user extends JFrame {
                         .append("\nHạn trả: ").append(hanTra)
                         .append("\nPhí quá hạn: ").append(phi).append(" VNĐ")
                         .append("\n-----------------------\n");
-
             }
 
             rs.close();
@@ -196,30 +200,26 @@ public class Menu_user extends JFrame {
             JOptionPane.showMessageDialog(this, "Lỗi khi lấy hóa đơn: " + ex.getMessage());
         }
     }
-    
+
     private void showQRCode() {
-    try {
-        // Giả sử bạn có file qr.png nằm trong thư mục project (hoặc src/ui)
-        ImageIcon icon = new ImageIcon(getClass().getResource("/ui/qr.png"));
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource("/ui/qr.png"));
+            Image img = icon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+            icon = new ImageIcon(img);
 
-        
-        // Scale cho đẹp
-        Image img = icon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
-        icon = new ImageIcon(img);
-
-        JLabel label = new JLabel(icon);
-        JOptionPane.showMessageDialog(this, label, "Quét mã QR để thanh toán", JOptionPane.PLAIN_MESSAGE);
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(this, "Không tìm thấy ảnh mã QR!");
+            JLabel label = new JLabel(icon);
+            JOptionPane.showMessageDialog(this, label, "Quét mã QR để thanh toán", JOptionPane.PLAIN_MESSAGE);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Không tìm thấy ảnh mã QR!");
+        }
     }
-}
 
     private void viewBook() {
         new BookListFrame().setVisible(true);
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new Menu_user("S001").setVisible(true)); // test thử
+        SwingUtilities.invokeLater(() -> new Menu_user("S001").setVisible(true));
     }
 }

@@ -21,7 +21,11 @@ public class BookCopyDAO {
             stmt.setString(5, copy.getAnhSach());
             stmt.setInt(6, copy.getSoLuong());
 
-            return stmt.executeUpdate() > 0;
+            boolean success = stmt.executeUpdate() > 0;
+            if (success) {
+                capNhatSoLuongDauSach(copy.getMaDauSach());
+            }
+            return success;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -40,7 +44,11 @@ public class BookCopyDAO {
             stmt.setInt(5, copy.getSoLuong());
             stmt.setString(6, copy.getMaSach());
 
-            return stmt.executeUpdate() > 0;
+            boolean success = stmt.executeUpdate() > 0;
+            if (success) {
+                capNhatSoLuongDauSach(copy.getMaDauSach());
+            }
+            return success;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -48,12 +56,19 @@ public class BookCopyDAO {
     }
 
     public boolean delete(String maSach) {
+        BookCopy copy = findById(maSach);
+        if (copy == null) return false;
+
         String sql = "DELETE FROM tb_sach WHERE MaSach=?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, maSach);
-            return stmt.executeUpdate() > 0;
+            boolean success = stmt.executeUpdate() > 0;
+            if (success) {
+                capNhatSoLuongDauSach(copy.getMaDauSach());
+            }
+            return success;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -106,14 +121,34 @@ public class BookCopyDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, maSach);
-            return stmt.executeUpdate() > 0;
+            boolean success = stmt.executeUpdate() > 0;
+            if (success) {
+                BookCopy copy = findById(maSach);
+                if (copy != null) {
+                    capNhatSoLuongDauSach(copy.getMaDauSach());
+                }
+            }
+            return success;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    // ✅ Hàm thêm để cập nhật trạng thái sách (dùng khi sách hết số lượng)
+    public boolean tangSoLuong(String maSach) {
+    String sql = "UPDATE tb_sach SET SoLuong = SoLuong + 1 WHERE MaSach = ?";
+    try (Connection conn = DBConnect.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setString(1, maSach);
+        return stmt.executeUpdate() > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+
     public boolean updateTrangThai(String maSach, String trangThai) {
         String sql = "UPDATE tb_sach SET TrangThai = ? WHERE MaSach = ?";
         try (Connection conn = DBConnect.getConnection();
@@ -150,4 +185,17 @@ public class BookCopyDAO {
         }
         return null;
     }
-}
+
+    public void capNhatSoLuongDauSach(String maDauSach) {
+        String sql = "UPDATE tb_dausach SET SoLuong = (SELECT SUM(SoLuong) FROM tb_sach WHERE MaDauSach = ?) WHERE MaDauSach = ?";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, maDauSach);
+            stmt.setString(2, maDauSach);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+} 

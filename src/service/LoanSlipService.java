@@ -2,13 +2,13 @@ package service;
 
 import dao.BookCopyDAO;
 import dao.LoanSlipDAO;
+import model.BookCopy;
 import model.LoanSlip;
 
-import javax.swing.JOptionPane;
-import java.time.LocalDate;
+import javax.swing.*;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Date;
 
 public class LoanSlipService {
     private final LoanSlipDAO loanSlipDAO;
@@ -16,7 +16,7 @@ public class LoanSlipService {
 
     public LoanSlipService() {
         this.loanSlipDAO = new LoanSlipDAO();
-        this.bookCopyDAO = new BookCopyDAO(); // Khởi tạo BookCopyDAO
+        this.bookCopyDAO = new BookCopyDAO();
     }
 
     public boolean addLoanSlip(LoanSlip loanSlip) {
@@ -32,34 +32,57 @@ public class LoanSlipService {
 
     public boolean muonSach(String maNguoiMuon, String maSach) {
         int soLuong = bookCopyDAO.getSoLuongSach(maSach);
-
         if (soLuong <= 0) {
             JOptionPane.showMessageDialog(null, "Sách này đã hết! Không thể mượn.");
             return false;
         }
 
-        // Trừ số lượng sách
+        // Giảm số lượng sách
         boolean success = bookCopyDAO.giamSoLuong(maSach);
         if (!success) return false;
 
-        // ✅ Nếu số lượng sau khi trừ = 0 → cập nhật trạng thái "Hết"
-        int soLuongConLai = bookCopyDAO.getSoLuongSach(maSach);
-        if (soLuongConLai == 0) {
+        // Cập nhật trạng thái nếu số lượng về 0
+        int conLai = bookCopyDAO.getSoLuongSach(maSach);
+        if (conLai == 0) {
             bookCopyDAO.updateTrangThai(maSach, "Hết");
         }
 
-        // Tạo mã phiếu mượn tự động
-        String maPhieuMuon = "PM" + System.currentTimeMillis();
+        // Cập nhật lại số lượng đầu sách
+        BookCopy sach = bookCopyDAO.findById(maSach);
+        if (sach != null) {
+            bookCopyDAO.capNhatSoLuongDauSach(sach.getMaDauSach());
+        }
 
-        // Thêm phiếu mượn
-        return loanSlipDAO.insert(new LoanSlip(
-            maPhieuMuon,
-            new Date(),                              // ngày mượn
-            new Date(System.currentTimeMillis() + 14L * 24 * 60 * 60 * 1000), // hạn trả
-            maSach,
-            maNguoiMuon,
-            null
-        ));
+        // Tạo mã phiếu
+        String maPhieu = "PM" + System.currentTimeMillis();
+        Date ngayMuon = new Date();
+        Date hanTra = new Date(System.currentTimeMillis() + 14L * 24 * 60 * 60 * 1000);
+
+        LoanSlip phieu = new LoanSlip(maPhieu, ngayMuon, hanTra, maSach, maNguoiMuon, null);
+        return loanSlipDAO.insert(phieu);
+    }
+
+    public boolean traSach(String maPhieuMuon) {
+        LoanSlip phieu = loanSlipDAO.findById(maPhieuMuon);
+        if (phieu == null || phieu.getNgayTra() != null) {
+            return false;
+        }
+
+        String maSach = phieu.getMaSach();
+        boolean success = bookCopyDAO.tangSoLuong(maSach);
+        if (!success) return false;
+
+        // Nếu sách được trả lại và số lượng > 0 → cập nhật trạng thái
+        bookCopyDAO.updateTrangThai(maSach, "Còn");
+
+        // Cập nhật lại số lượng trong đầu sách
+        BookCopy sach = bookCopyDAO.findById(maSach);
+        if (sach != null) {
+            bookCopyDAO.capNhatSoLuongDauSach(sach.getMaDauSach());
+        }
+
+        // Cập nhật ngày trả
+        return loanSlipDAO.updateNgayTra(maPhieuMuon, new Date());
     }
 
     public boolean updateLoanSlip(LoanSlip loanSlip) {
@@ -92,7 +115,7 @@ public class LoanSlipService {
 
     public List<LoanSlip> getOverdueLoanSlips() {
         return loanSlipDAO.getAll().stream()
-                .filter(p -> p.getNgayTra() == null) // hoặc kiểm tra ngày hiện tại > hạn trả
+                .filter(p -> p.getNgayTra() == null) // hoặc kiểm tra hạn trả < ngày hiện tại
                 .toList();
     }
 }

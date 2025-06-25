@@ -124,4 +124,20 @@ public class BookTitleDAO {
         }
         return null;
     }
+
+    // Cập nhật số lượng dựa theo bảng bản sao sách
+    public boolean capNhatSoLuong(String maDauSach) {
+        String sql = "UPDATE tb_dausach SET Soluong = (SELECT COUNT(*) FROM tb_sach WHERE MaDauSach = ?) WHERE MaDauSach = ?";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, maDauSach);
+            stmt.setString(2, maDauSach);
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
