@@ -7,18 +7,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DAO class thao tác với bảng tb_dausach.
- */
 public class BookTitleDAO {
 
-    // Thêm một đầu sách mới
     public boolean insert(BookTitle book) {
-        String sql = "INSERT INTO tb_dausach (MaDauSach, TenSach, Soluong, TheLoai, TacGia, NXB, NamXB) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO tb_dausach (MaSach, TenSach, Soluong, TheLoai, TacGia, NXB, NamXB) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, book.getMaDauSach());
+            stmt.setString(1, book.getMaSach());
             stmt.setString(2, book.getTenSach());
             stmt.setInt(3, book.getSoLuong());
             stmt.setString(4, book.getTheLoai());
@@ -29,16 +25,15 @@ public class BookTitleDAO {
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace(); // có thể log ra file sau này
+            e.printStackTrace();
         }
         return false;
     }
 
-    // Cập nhật đầu sách
     public boolean update(BookTitle book) {
-        String sql = "UPDATE tb_dausach SET TenSach=?, Soluong=?, TheLoai=?, TacGia=?, NXB=?, NamXB=? WHERE MaDauSach=?";
+        String sql = "UPDATE tb_dausach SET TenSach=?, Soluong=?, TheLoai=?, TacGia=?, NXB=?, NamXB=? WHERE MaSach=?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, book.getTenSach());
             stmt.setInt(2, book.getSoLuong());
@@ -46,7 +41,7 @@ public class BookTitleDAO {
             stmt.setString(4, book.getTacGia());
             stmt.setString(5, book.getNxb());
             stmt.setInt(6, book.getNamXB());
-            stmt.setString(7, book.getMaDauSach());
+            stmt.setString(7, book.getMaSach());
 
             return stmt.executeUpdate() > 0;
 
@@ -56,13 +51,12 @@ public class BookTitleDAO {
         return false;
     }
 
-    // Xoá đầu sách theo mã
-    public boolean delete(String maDauSach) {
-        String sql = "DELETE FROM tb_dausach WHERE MaDauSach=?";
+    public boolean delete(String MaSach) {
+        String sql = "DELETE FROM tb_dausach WHERE MaSach=?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, maDauSach);
+            stmt.setString(1, MaSach);
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
@@ -71,24 +65,22 @@ public class BookTitleDAO {
         return false;
     }
 
-    // Lấy toàn bộ đầu sách
     public List<BookTitle> getAll() {
         List<BookTitle> list = new ArrayList<>();
         String sql = "SELECT * FROM tb_dausach";
         try (Connection conn = DBConnect.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
                 BookTitle book = new BookTitle(
-                        rs.getString("MaDauSach"),
+                        rs.getString("MaSach"),
                         rs.getString("TenSach"),
                         rs.getInt("Soluong"),
                         rs.getString("TheLoai"),
                         rs.getString("TacGia"),
                         rs.getString("NXB"),
-                        rs.getInt("NamXB")
-                );
+                        rs.getInt("NamXB"));
                 list.add(book);
             }
 
@@ -98,25 +90,23 @@ public class BookTitleDAO {
         return list;
     }
 
-    // Tìm đầu sách theo mã
-    public BookTitle findById(String maDauSach) {
-        String sql = "SELECT * FROM tb_dausach WHERE MaDauSach=?";
+    public BookTitle findById(String MaSach) {
+        String sql = "SELECT * FROM tb_dausach WHERE MaSach=?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, maDauSach);
+            stmt.setString(1, MaSach);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 return new BookTitle(
-                        rs.getString("MaDauSach"),
+                        rs.getString("MaSach"),
                         rs.getString("TenSach"),
                         rs.getInt("Soluong"),
                         rs.getString("TheLoai"),
                         rs.getString("TacGia"),
                         rs.getString("NXB"),
-                        rs.getInt("NamXB")
-                );
+                        rs.getInt("NamXB"));
             }
 
         } catch (SQLException e) {
@@ -125,14 +115,13 @@ public class BookTitleDAO {
         return null;
     }
 
-    // Cập nhật số lượng dựa theo bảng bản sao sách
-    public boolean capNhatSoLuong(String maDauSach) {
-        String sql = "UPDATE tb_dausach SET Soluong = (SELECT COUNT(*) FROM tb_sach WHERE MaDauSach = ?) WHERE MaDauSach = ?";
+    public boolean capNhatSoLuong(String MaSach) {
+        String sql = "UPDATE tb_dausach SET Soluong = (SELECT COUNT(*) FROM tb_sach WHERE MaDauSach = ?) WHERE MaSach = ?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, maDauSach);
-            stmt.setString(2, maDauSach);
+            stmt.setString(1, MaSach);
+            stmt.setString(2, MaSach);
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
