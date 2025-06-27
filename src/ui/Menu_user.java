@@ -29,11 +29,10 @@ public class Menu_user extends JFrame {
 
         JMenu menuChucNang = new JMenu("Hệ Thống");
         JMenuItem itemFindBook = new JMenuItem("Tìm sách");
+        JMenuItem itemViewBook = new JMenuItem("Kho sách");
         JMenuItem itemBorrowBook = new JMenuItem("Mượn sách");
-        JMenuItem itemViewBook = new JMenuItem("Xem thông tin sách");
+        JMenuItem itemExtendLoan = new JMenuItem("Gia hạn mượn sách");
         JMenuItem itemBill = new JMenuItem("Hóa đơn mượn sách");
-        JMenuItem itemPayBill = new JMenuItem("Thanh toán hóa đơn");
-        JMenuItem itemReturnBook = new JMenuItem("Trả sách");
 
         JMenu menuTaiKhoan = new JMenu("Tài khoản");
         JMenuItem itemLogout = new JMenuItem("Đăng xuất");
@@ -42,23 +41,21 @@ public class Menu_user extends JFrame {
         menuChucNang.add(itemBorrowBook);
         menuChucNang.add(itemViewBook);
         menuTaiKhoan.add(itemLogout);
-        menuChucNang.add(itemPayBill);
         menuChucNang.add(itemBill);
-        menuChucNang.add(itemReturnBook);
         menuBar.add(menuChucNang);
         menuBar.add(menuTaiKhoan);
+        menuChucNang.add(itemExtendLoan);
         setJMenuBar(menuBar);
 
         itemFindBook.addActionListener(e -> findBook());
         itemBorrowBook.addActionListener(e -> borrowBook());
         itemViewBook.addActionListener(e -> viewBook());
-        itemPayBill.addActionListener(e -> showQRCode());
         itemLogout.addActionListener(e -> {
             this.dispose();
             new Login_user().setVisible(true);
         });
-        itemReturnBook.addActionListener(e -> returnBook());
         itemBill.addActionListener(e -> showBill());
+        itemExtendLoan.addActionListener(e -> extendLoan());
     }
 
     private String fetchTenNguoiMuon(String maNguoiMuon) {
@@ -80,15 +77,31 @@ public class Menu_user extends JFrame {
     }
 
     private void findBook() {
-        JTextField keywordField = new JTextField();
-        int result = JOptionPane.showConfirmDialog(this, keywordField, "Nhập từ khóa tìm sách",
-                JOptionPane.OK_CANCEL_OPTION);
+        JTextField tenField = new JTextField();
+        JTextField tacGiaField = new JTextField();
+
+        JPanel panel = new JPanel(new GridLayout(2, 2));
+        panel.add(new JLabel("Tên sách:"));
+        panel.add(tenField);
+        panel.add(new JLabel("Tác giả:"));
+        panel.add(tacGiaField);
+
+        int result = JOptionPane.showOptionDialog(
+                this,
+                panel,
+                "Nhập thông tin tìm sách",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null, null, null);
+
         if (result == JOptionPane.OK_OPTION) {
-            String keyword = keywordField.getText().trim();
-            if (!keyword.isEmpty()) {
-                new BookSearchResultFrame(keyword).setVisible(true);
+            String ten = tenField.getText().trim();
+            String tacGia = tacGiaField.getText().trim();
+
+            if (!ten.isEmpty() && !tacGia.isEmpty()) {
+                new BookSearchResultFrame(ten, tacGia).setVisible(true);
             } else {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập từ khóa!");
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ tên sách và tác giả.");
             }
         }
     }
@@ -130,7 +143,6 @@ public class Menu_user extends JFrame {
             }
 
             try (Connection conn = util.DBConnect.getConnection()) {
-                // Tìm Mã sách + Số lượng
                 String sqlFind = "SELECT MaSach, SoLuong FROM tb_dausach WHERE TenSach = ? AND TacGia = ?";
                 PreparedStatement stmtFind = conn.prepareStatement(sqlFind);
                 stmtFind.setString(1, tenSach);
@@ -147,7 +159,6 @@ public class Menu_user extends JFrame {
                 rs.close();
                 stmtFind.close();
 
-                // Đếm số lượng sách đã mượn
                 String sqlCount = "SELECT COUNT(*) AS DaMuon FROM tb_phieumuon WHERE MaSach = ?";
                 PreparedStatement stmtCount = conn.prepareStatement(sqlCount);
                 stmtCount.setString(1, maSach);
@@ -165,7 +176,6 @@ public class Menu_user extends JFrame {
                     return;
                 }
 
-                // Tiếp tục mượn sách
                 String ngayMuon = java.time.LocalDate.now().toString();
                 String hanTra = java.time.LocalDate.now().plusDays(7).toString(); // VD: hạn trả sau 7 ngày
 
@@ -212,13 +222,12 @@ public class Menu_user extends JFrame {
                 String ngayMuon = rs.getString("NgayMuon");
                 String hanTra = rs.getString("HanTra");
 
-                // Tính phí nếu quá hạn
                 long phi = 0;
                 java.time.LocalDate hanTraDate = java.time.LocalDate.parse(hanTra);
                 java.time.LocalDate today = java.time.LocalDate.now();
                 if (today.isAfter(hanTraDate)) {
                     long daysLate = java.time.temporal.ChronoUnit.DAYS.between(hanTraDate, today);
-                    phi = daysLate * 5000; // Ví dụ: 5000 đồng/ngày quá hạn
+                    phi = daysLate * 5000;
                 }
 
                 sb.append("Mã sách: ").append(maSach)
@@ -245,25 +254,8 @@ public class Menu_user extends JFrame {
         }
     }
 
-    private void showQRCode() {
-        try {
-            // Giả sử bạn có file qr.png nằm trong thư mục project (hoặc src/ui)
-            ImageIcon icon = new ImageIcon(getClass().getResource("/ui/qr.png"));
-
-            // Scale cho đẹp
-            Image img = icon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
-            icon = new ImageIcon(img);
-
-            JLabel label = new JLabel(icon);
-            JOptionPane.showMessageDialog(this, label, "Quét mã QR để thanh toán", JOptionPane.PLAIN_MESSAGE);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Không tìm thấy ảnh mã QR!");
-        }
-    }
-
-    private void returnBook() {
-        JFrame frame = new JFrame("Trả sách");
+    private void extendLoan() {
+        JFrame frame = new JFrame("Gia hạn mượn sách");
         frame.setSize(400, 200);
         frame.setLocationRelativeTo(this);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -271,10 +263,10 @@ public class Menu_user extends JFrame {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JComboBox<String> comboBooks = new JComboBox<>();
+        JComboBox<String> comboLoans = new JComboBox<>();
 
         try (Connection conn = util.DBConnect.getConnection()) {
-            String sql = "SELECT MaPhieuMuon, MaSach FROM tb_phieumuon WHERE MaNguoiMuon = ?";
+            String sql = "SELECT MaPhieuMuon, MaSach, NgayTra FROM tb_phieumuon WHERE MaNguoiMuon = ? AND NgayTra < CURDATE()";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, maNguoiMuon);
             ResultSet rs = stmt.executeQuery();
@@ -282,55 +274,55 @@ public class Menu_user extends JFrame {
             while (rs.next()) {
                 String maPhieu = rs.getString("MaPhieuMuon");
                 String maSach = rs.getString("MaSach");
-                comboBooks.addItem(maPhieu + " - " + maSach);
+                String ngayTra = rs.getString("NgayTra");
+                comboLoans.addItem(maPhieu + " - " + maSach + " (Hạn cũ: " + ngayTra + ")");
             }
 
             rs.close();
             stmt.close();
 
-            if (comboBooks.getItemCount() == 0) {
-                JOptionPane.showMessageDialog(frame, "Không có sách nào để trả!");
+            if (comboLoans.getItemCount() == 0) {
+                JOptionPane.showMessageDialog(frame, "Bạn không có sách nào cần gia hạn!");
                 frame.dispose();
                 return;
             }
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Lỗi khi truy vấn sách đang mượn: " + ex.getMessage());
+            JOptionPane.showMessageDialog(frame, "Lỗi khi kiểm tra phiếu mượn: " + ex.getMessage());
             frame.dispose();
             return;
         }
 
-        JButton btnReturn = new JButton("Xác nhận trả sách");
-
-        panel.add(comboBooks, BorderLayout.CENTER);
-        panel.add(btnReturn, BorderLayout.SOUTH);
+        JButton btnExtend = new JButton("Xác nhận gia hạn");
+        panel.add(comboLoans, BorderLayout.CENTER);
+        panel.add(btnExtend, BorderLayout.SOUTH);
 
         frame.add(panel);
         frame.setVisible(true);
 
-        btnReturn.addActionListener(e -> {
-            String selected = (String) comboBooks.getSelectedItem();
+        btnExtend.addActionListener(e -> {
+            String selected = (String) comboLoans.getSelectedItem();
             if (selected != null) {
-                String maPhieu = selected.split(" - ")[0];
+                String maPhieu = selected.split(" - ")[0].trim();
 
                 try (Connection conn = util.DBConnect.getConnection()) {
-                    String sql = "DELETE FROM tb_phieumuon WHERE MaPhieuMuon = ?";
+                    String sql = "UPDATE tb_phieumuon SET NgayTra = DATE_ADD(NgayTra, INTERVAL 7 DAY) WHERE MaPhieuMuon = ?";
                     PreparedStatement stmt = conn.prepareStatement(sql);
                     stmt.setString(1, maPhieu);
                     int rows = stmt.executeUpdate();
 
                     if (rows > 0) {
-                        JOptionPane.showMessageDialog(frame, "Trả sách thành công!");
+                        JOptionPane.showMessageDialog(frame, "Gia hạn thành công!");
                         frame.dispose();
                     } else {
-                        JOptionPane.showMessageDialog(frame, "Trả sách thất bại!");
+                        JOptionPane.showMessageDialog(frame, "Gia hạn thất bại!");
                     }
 
                     stmt.close();
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(frame, "Lỗi khi trả sách: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(frame, "Lỗi khi gia hạn: " + ex.getMessage());
                 }
             }
         });
@@ -341,6 +333,6 @@ public class Menu_user extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new Menu_user("S001").setVisible(true)); // test thử
+        SwingUtilities.invokeLater(() -> new Menu_user("S001").setVisible(true));
     }
 }
