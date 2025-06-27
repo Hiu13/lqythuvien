@@ -12,7 +12,7 @@ public class BookCopyDAO {
     public boolean insert(BookCopy copy) {
         String sql = "INSERT INTO tb_sach (MaSach, TenSach, TrangThai, MaDauSach, AnhSach, SoLuong) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, copy.getMaSach());
             stmt.setString(2, copy.getTenSach());
@@ -35,7 +35,7 @@ public class BookCopyDAO {
     public boolean update(BookCopy copy) {
         String sql = "UPDATE tb_sach SET TenSach=?, TrangThai=?, MaDauSach=?, AnhSach=?, SoLuong=? WHERE MaSach=?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, copy.getTenSach());
             stmt.setString(2, copy.getTrangThai());
@@ -57,11 +57,12 @@ public class BookCopyDAO {
 
     public boolean delete(String maSach) {
         BookCopy copy = findById(maSach);
-        if (copy == null) return false;
+        if (copy == null)
+            return false;
 
         String sql = "DELETE FROM tb_sach WHERE MaSach=?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, maSach);
             boolean success = stmt.executeUpdate() > 0;
@@ -79,8 +80,8 @@ public class BookCopyDAO {
         List<BookCopy> list = new ArrayList<>();
         String sql = "SELECT * FROM tb_sach";
         try (Connection conn = DBConnect.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
                 BookCopy copy = new BookCopy(
@@ -89,8 +90,7 @@ public class BookCopyDAO {
                         rs.getString("TrangThai"),
                         rs.getString("MaDauSach"),
                         rs.getString("AnhSach"),
-                        rs.getInt("SoLuong")
-                );
+                        rs.getInt("SoLuong"));
                 list.add(copy);
             }
         } catch (SQLException e) {
@@ -102,7 +102,7 @@ public class BookCopyDAO {
     public int getSoLuongSach(String maSach) {
         String sql = "SELECT SoLuong FROM tb_sach WHERE MaSach = ?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, maSach);
             ResultSet rs = stmt.executeQuery();
@@ -118,7 +118,7 @@ public class BookCopyDAO {
     public boolean giamSoLuong(String maSach) {
         String sql = "UPDATE tb_sach SET SoLuong = SoLuong - 1 WHERE MaSach = ? AND SoLuong > 0";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, maSach);
             boolean success = stmt.executeUpdate() > 0;
@@ -136,23 +136,22 @@ public class BookCopyDAO {
     }
 
     public boolean tangSoLuong(String maSach) {
-    String sql = "UPDATE tb_sach SET SoLuong = SoLuong + 1 WHERE MaSach = ?";
-    try (Connection conn = DBConnect.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        String sql = "UPDATE tb_sach SET SoLuong = SoLuong + 1 WHERE MaSach = ?";
+        try (Connection conn = DBConnect.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-        stmt.setString(1, maSach);
-        return stmt.executeUpdate() > 0;
-    } catch (SQLException e) {
-        e.printStackTrace();
+            stmt.setString(1, maSach);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
-    return false;
-}
-
 
     public boolean updateTrangThai(String maSach, String trangThai) {
         String sql = "UPDATE tb_sach SET TrangThai = ? WHERE MaSach = ?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, trangThai);
             stmt.setString(2, maSach);
@@ -166,7 +165,7 @@ public class BookCopyDAO {
     public BookCopy findById(String maSach) {
         String sql = "SELECT * FROM tb_sach WHERE MaSach=?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, maSach);
             ResultSet rs = stmt.executeQuery();
@@ -177,8 +176,7 @@ public class BookCopyDAO {
                         rs.getString("TrangThai"),
                         rs.getString("MaDauSach"),
                         rs.getString("AnhSach"),
-                        rs.getInt("SoLuong")
-                );
+                        rs.getInt("SoLuong"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -189,7 +187,7 @@ public class BookCopyDAO {
     public void capNhatSoLuongDauSach(String maDauSach) {
         String sql = "UPDATE tb_dausach SET SoLuong = (SELECT SUM(SoLuong) FROM tb_sach WHERE MaDauSach = ?) WHERE MaDauSach = ?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, maDauSach);
             stmt.setString(2, maDauSach);
@@ -198,4 +196,4 @@ public class BookCopyDAO {
             e.printStackTrace();
         }
     }
-} 
+}
