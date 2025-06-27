@@ -15,49 +15,38 @@ public class MainMenuForm extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Menu bar
         JMenuBar menuBar = new JMenuBar();
 
-        // Đầu sách
         JMenu menuBookTitle = new JMenu("Đầu sách");
-        JMenuItem menuBookTitleForm = new JMenuItem("Quản lý đầu sách");
-        menuBookTitleForm.addActionListener(e -> new BookTitleForm().setVisible(true));
-        menuBookTitle.add(menuBookTitleForm);
-
-        // Sách (bản sao sách)
-        JMenu menuBook = new JMenu("Sách");
         JMenuItem menuBookForm = new JMenuItem("Quản lý sách");
-        menuBookForm.addActionListener(e -> new BookCopyForm().setVisible(true));
-        menuBook.add(menuBookForm);
+        menuBookForm.addActionListener(e -> new BookForm().setVisible(true));
+        menuBookTitle.add(menuBookForm);
 
-        // Người mượn
         JMenu menuBorrower = new JMenu("Người mượn");
         JMenuItem menuBorrowerForm = new JMenuItem("Quản lý người mượn");
         menuBorrowerForm.addActionListener(e -> new BorrowerForm().setVisible(true));
         menuBorrower.add(menuBorrowerForm);
 
-        // Phiếu mượn
-        JMenu menuLoan = new JMenu("Phiếu mượn");
+        JMenu menuLoan = new JMenu("Mượn/Trả sách");
         JMenuItem menuLoanForm = new JMenuItem("Quản lý phiếu mượn");
         menuLoanForm.addActionListener(e -> new LoanSlipForm().setVisible(true));
         menuLoan.add(menuLoanForm);
+        JMenuItem menuReturnBook = new JMenuItem("Trả sách");
+        menuReturnBook.addActionListener(e -> new ReturnBookForm().setVisible(true));
+        menuLoan.add(menuReturnBook);
 
-        // Hệ thống
-        JMenu menuSystem = new JMenu("Hệ thống");
-        JMenuItem menuExit = new JMenuItem("Thoát");
+        JMenu menuSystem = new JMenu("Tài khoản");
+        JMenuItem menuExit = new JMenuItem("Đăng xuất");
         menuExit.addActionListener(e -> System.exit(0));
         menuSystem.add(menuExit);
 
-        // Thêm vào thanh menu
         menuBar.add(menuBookTitle);
-        menuBar.add(menuBook);
         menuBar.add(menuBorrower);
         menuBar.add(menuLoan);
         menuBar.add(menuSystem);
 
         setJMenuBar(menuBar);
 
-        // Giao diện chính (welcome)
         JLabel welcomeLabel = new JLabel("Chào mừng đến với hệ thống quản lý thư viện!", JLabel.CENTER);
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 22));
         add(welcomeLabel, BorderLayout.CENTER);
