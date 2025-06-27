@@ -5,6 +5,7 @@ import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.regex.Pattern;
 import util.DBConnect;
 
 public class SignUp_user extends JFrame {
@@ -69,6 +70,11 @@ public class SignUp_user extends JFrame {
             return;
         }
 
+        if (!Checkmail(email)) {
+            JOptionPane.showMessageDialog(this, "Email không hợp lệ!");
+            return;
+        }
+
         try (Connection conn = DBConnect.getConnection()) {
             String maMoi = generateMaNguoiMuon(conn);
 
@@ -95,13 +101,18 @@ public class SignUp_user extends JFrame {
         }
     }
 
+    private boolean Checkmail(String email) {
+        String gmailRegex = "^[a-zA-Z0-9]+@gmail\\.com$";
+        return Pattern.matches(gmailRegex, email);
+    }
+
     private String generateMaNguoiMuon(Connection conn) throws Exception {
         String maMoi;
         int so = 1;
         boolean tonTai;
 
         do {
-            maMoi = String.format("S%03d", so);
+            maMoi = String.format("NM%03d", so);
             String sqlCheck = "SELECT MaNguoiMuon FROM tb_nguoimuon WHERE MaNguoiMuon = ?";
             PreparedStatement stmt = conn.prepareStatement(sqlCheck);
             stmt.setString(1, maMoi);
