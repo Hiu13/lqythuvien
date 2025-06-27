@@ -5,6 +5,7 @@ import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.regex.Pattern;
 import util.DBConnect;
 
 public class Login_user extends JFrame {
@@ -12,7 +13,7 @@ public class Login_user extends JFrame {
     private JPasswordField txtPassword;
 
     public Login_user() {
-        setTitle("Đăng nhập người mượn");
+        setTitle("Đăng nhập");
         setSize(400, 200);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -20,7 +21,7 @@ public class Login_user extends JFrame {
         JPanel mainPanel = new JPanel(new GridLayout(3, 2, 10, 10));
         mainPanel.setBorder(
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createTitledBorder("Thông tin đăng ký"),
+                        BorderFactory.createTitledBorder("ĐĂNG NHẬP"),
                         BorderFactory.createEmptyBorder(10, 10, 10, 10)));
         mainPanel.add(new JLabel("Email:"));
         txtEmail = new JTextField();
@@ -52,6 +53,11 @@ public class Login_user extends JFrame {
             return;
         }
 
+        if (!Checkmail(email)) {
+            JOptionPane.showMessageDialog(this, "Email không hợp lệ!");
+            return;
+        }
+
         try (Connection conn = DBConnect.getConnection()) {
             String sql = "SELECT MaNguoiMuon FROM tb_nguoimuon WHERE Gmail = ? AND password = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -71,6 +77,11 @@ public class Login_user extends JFrame {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi đăng nhập: " + ex.getMessage());
         }
+    }
+
+    private boolean Checkmail(String email) {
+        String gmailRegex = "^[a-zA-Z0-9]+@gmail\\.com$";
+        return Pattern.matches(gmailRegex, email);
     }
 
     public static void main(String[] args) {
