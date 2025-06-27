@@ -1,0 +1,84 @@
+package dao;
+
+import model.Book;
+import util.DBConnect;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class BookDAO {
+    public List<Book> getAllBooks() {
+        List<Book> list = new ArrayList<>();
+        String sql = "SELECT * FROM tb_sach";
+        try (Connection conn = DBConnect.getConnection();
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Book b = new Book(
+                        rs.getString("MaSach"),
+                        rs.getString("TenSach"),
+                        rs.getString("TrangThai"),
+                        rs.getString("AnhSach"),
+                        rs.getString("TacGia"),
+                        rs.getInt("SoLuong"));
+                list.add(b);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public boolean addBook(Book b) {
+        String sql = "INSERT INTO tb_sach (MaSach, TenSach, TrangThai, AnhSach, TacGia, SoLuong) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBConnect.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, b.getMaSach());
+            stmt.setString(2, b.getTenSach());
+            stmt.setString(3, b.getTrangThai());
+            stmt.setString(4, b.getAnhSach());
+            stmt.setString(5, b.getTacGia());
+            stmt.setInt(6, b.getSoLuong());
+
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateBook(Book b) {
+        String sql = "UPDATE tb_sach SET TenSach=?, TrangThai=?, AnhSach=?, TacGia=?, SoLuong=? WHERE MaSach=?";
+        try (Connection conn = DBConnect.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, b.getTenSach());
+            stmt.setString(2, b.getTrangThai());
+            stmt.setString(3, b.getAnhSach());
+            stmt.setString(4, b.getTacGia());
+            stmt.setInt(5, b.getSoLuong());
+            stmt.setString(6, b.getMaSach());
+
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteBook(String maSach) {
+        String sql = "DELETE FROM tb_sach WHERE MaSach=?";
+        try (Connection conn = DBConnect.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, maSach);
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+}
